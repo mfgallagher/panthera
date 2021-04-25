@@ -80,7 +80,7 @@ describe("Token contract", function () {
       // `require` will evaluate false and revert the transaction.
       await expect(
         hardhatToken.connect(addr1).transfer(owner.address, 1)
-      ).to.be.revertedWith("Not enough tokens");
+      ).to.be.revertedWith("You do not have enough tokens for this transfer");
 
       // Owner balance shouldn't have changed.
       expect(await hardhatToken.balanceOf(owner.address)).to.equal(
