@@ -10,7 +10,7 @@ import "@typechain/ethers-v5";
 
 
 const config: HardhatUserConfig = {
-  solidity: "0.6.8",
+  solidity: "0.7.3",
   react: {
     providerPriority: ["web3modal", "hardhat"],
   },

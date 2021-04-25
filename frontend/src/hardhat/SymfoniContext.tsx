@@ -4,8 +4,8 @@
 import { providers, Signer, ethers } from "ethers";
 import React, { useEffect, useState } from "react";
 import Web3Modal, { IProviderOptions } from "web3modal";
-import { Counter } from "./typechain/Counter";
-import { Counter__factory } from "./typechain/factories/Counter__factory";
+import { Token } from "./typechain/Token";
+import { Token__factory } from "./typechain/factories/Token__factory";
 
 const emptyContract = {
     instance: undefined,
@@ -25,7 +25,7 @@ const defaultSymfoniContext: SymfoniContextInterface = {
     providers: []
 };
 export const SymfoniContext = React.createContext<SymfoniContextInterface>(defaultSymfoniContext);
-export const CounterContext = React.createContext<SymfoniCounter>(emptyContract);
+export const TokenContext = React.createContext<SymfoniToken>(emptyContract);
 
 export interface SymfoniContextInterface {
     init: (provider?: string) => void;
@@ -41,9 +41,9 @@ export interface SymfoniProps {
     loadingComponent?: React.ReactNode;
 }
 
-export interface SymfoniCounter {
-    instance?: Counter;
-    factory?: Counter__factory;
+export interface SymfoniToken {
+    instance?: Token;
+    factory?: Token__factory;
 }
 
 export const Symfoni: React.FC<SymfoniProps> = ({
@@ -60,7 +60,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
     const [currentAddress, setCurrentAddress] = useState<string>(defaultCurrentAddress);
     const [fallbackProvider] = useState<string | undefined>(undefined);
     const [providerPriority, setProviderPriority] = useState<string[]>(["web3modal", "hardhat"]);
-    const [Counter, setCounter] = useState<SymfoniCounter>(emptyContract);
+    const [Token, setToken] = useState<SymfoniToken>(emptyContract);
     useEffect(() => {
         if (messages.length > 0)
             console.debug(messages.pop())
@@ -140,7 +140,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                 setMessages(old => [...old, text])
             }
             const finishWithContracts = (text: string) => {
-                setCounter(getCounter(_provider, _signer))
+                setToken(getToken(_provider, _signer))
                 finish(text)
             }
             if (!autoInit && initializeCounter === 0) return finish("Auto init turned off.")
@@ -169,11 +169,11 @@ export const Symfoni: React.FC<SymfoniProps> = ({
         return () => { subscribed = false }
     }, [initializeCounter])
 
-    const getCounter = (_provider: providers.Provider, _signer?: Signer) => {
-        let instance = _signer ? Counter__factory.connect(ethers.constants.AddressZero, _signer) : Counter__factory.connect(ethers.constants.AddressZero, _provider)
-        const contract: SymfoniCounter = {
+    const getToken = (_provider: providers.Provider, _signer?: Signer) => {
+        let instance = _signer ? Token__factory.connect(ethers.constants.AddressZero, _signer) : Token__factory.connect(ethers.constants.AddressZero, _provider)
+        const contract: SymfoniToken = {
             instance: instance,
-            factory: _signer ? new Counter__factory(_signer) : undefined,
+            factory: _signer ? new Token__factory(_signer) : undefined,
         }
         return contract
     }
@@ -192,7 +192,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
             <ProviderContext.Provider value={[provider, setProvider]}>
                 <SignerContext.Provider value={[signer, setSigner]}>
                     <CurrentAddressContext.Provider value={[currentAddress, setCurrentAddress]}>
-                        <CounterContext.Provider value={Counter}>
+                        <TokenContext.Provider value={Token}>
                             {showLoading && loading ?
                                 props.loadingComponent
                                     ? props.loadingComponent
@@ -203,7 +203,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                                     </div>
                                 : props.children
                             }
-                        </CounterContext.Provider >
+                        </TokenContext.Provider >
                     </CurrentAddressContext.Provider>
                 </SignerContext.Provider>
             </ProviderContext.Provider>
