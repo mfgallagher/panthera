@@ -2,14 +2,12 @@ import React, { useContext, useState } from 'react'
 import Web3 from 'web3'
 import { Symfoni } from "./../hardhat/SymfoniContext";
 import { CurrentAddressContext } from "./../hardhat/SymfoniContext";
-import { Button, ButtonGroup, createStyles, Dialog, Grid, IconButton, makeStyles, Paper, Theme, Typography, WithStyles, withStyles } from '@material-ui/core';
+import { AppBar, Box, Button, ButtonGroup, createStyles, Dialog, Grid, IconButton, makeStyles, Paper, Tab, Tabs, Theme, Typography, WithStyles, withStyles } from '@material-ui/core';
 import MuiDialogTitle from '@material-ui/core/DialogTitle';
 import MuiDialogContent from '@material-ui/core/DialogContent';
 import MuiDialogActions from '@material-ui/core/DialogActions';
 import CloseIcon from '@material-ui/icons/Close';
-import PantherCoin from './../images/panthercoin.jpg'
-
-
+import PantherCoin from './../images/panthercoinn.jpg'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -17,11 +15,11 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
     },
     paper: {
-      padding: theme.spacing(2),
       margin: 'auto',
+      padding: theme.spacing(2),
       height: 300,
       maxWidth: 800,
-      backgroundColor: '#FAEBD7'
+      backgroundColor: '#3368ff'
     },
     image: {
       width: 128,
@@ -30,8 +28,8 @@ const useStyles = makeStyles((theme: Theme) =>
     img: {
       margin: 'auto',
       display: 'block',
-      maxWidth: '100%',
-      maxHeight: '100%',
+      maxWidth: '300',
+      maxHeight: '300',
     },
   }),
 );
@@ -42,6 +40,18 @@ export default function UserWallet() {
   const classes = useStyles()
   const [openRedeem, setOpenRedeem] = useState(false)
   let web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
+  const [value, setValue] = React.useState(0);
+
+  function a11yProps(index: any) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
+
+  const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setValue(newValue);
+  };
 
 
   const handleClickOpen = () => {
@@ -52,43 +62,35 @@ export default function UserWallet() {
   };
 
   return (
-    <>
+    <div style={{
+      backgroundColor: '#80a1ff'
+    }}>
     { (!openRedeem) ? (
-      <div className="App">
+      <div>
         <Symfoni>
-          <Grid item container
-          className={classes.root}
-          spacing={1}
-          justify="center"
-          >
-            <Grid item container >
-              <Grid item xs={2}>
-                <img src={PantherCoin} />
-              </Grid>
+          <AppBar position="static">
+            <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
+              <Tab label="Wallet" {...a11yProps(0)} />
+              <Tab label="Account" {...a11yProps(1)} />
+            </Tabs>
+          </AppBar>
+          <TabPanel value={value} index={0}>
 
-              <Grid item xs={3}>
-                <Paper className={classes.paper}>
-                  <Typography
-                  variant="subtitle1"
-                  color="secondary"
-                  >
-                    Welcome to your Panthera Wallet!
-                  </Typography>
-                </Paper>
-              </Grid>
-
-              <Grid item xs={5}>
-                <Paper className={classes.paper}>
-                  <Typography noWrap>
-                    Account: {currentAddress}
-                  </Typography>
-                  <p>
-                    Balance:
-                    </p>
-                </Paper>
-              </Grid>
+          <Grid item container >
+            <Grid item xs={6}>
+              <img src={PantherCoin} />
             </Grid>
 
+            <Grid item xs={6}>
+              <Paper className={classes.paper}>
+                <Typography
+                variant="subtitle1"
+                color="secondary"
+                >
+                  Welcome to your Panthera Wallet!
+                </Typography>
+              </Paper>
+            </Grid>
             <Grid item xs={12}>
               <ButtonGroup fullWidth>
                 <Button
@@ -101,6 +103,21 @@ export default function UserWallet() {
               </ButtonGroup>
             </Grid>
           </Grid>
+
+          </TabPanel>
+
+          <TabPanel value={value} index={1}>
+
+              <Paper className={classes.paper}>
+                <Typography noWrap>
+                  Account: {currentAddress}
+                </Typography>
+                <p>
+                  Balance: 2.22 ETH
+                  </p>
+              </Paper>
+
+          </TabPanel>
         </Symfoni>
       </div>
     ) : (
@@ -122,7 +139,34 @@ export default function UserWallet() {
       </Dialog>
     </div>
     )}
-    </>
+    </div>
+  );
+}
+
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: any;
+  value: any;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box p={3}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
   );
 }
 
