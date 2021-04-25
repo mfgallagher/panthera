@@ -38,7 +38,7 @@ function App() {
             <div>
               <UserWallet />
             </div>
-        </Symfoni>
+        </Symfoni>  
       </header>
     </div>
   );
