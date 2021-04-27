@@ -1,9 +1,13 @@
 # panthera
 
-To install and run project:
+To run project:
 
-download
+in a terminal in the root folder:
+  - run npm install
+  - run npx hardhat
 
-in a terminal in the root folder, run npm install
-
-cd into the frontend folder, and run npm install again
+in a different terminal in the root folder:
+  - run npx hardhat deploy
+  - cd into the frontend folder
+  - run npm install
+  - run npm start

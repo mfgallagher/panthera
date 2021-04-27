@@ -35,11 +35,16 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 
+
+
 export default function UserWallet() {
   const [currentAddress, setCurrentAddress] = useContext(CurrentAddressContext)
   const classes = useStyles()
   const [openRedeem, setOpenRedeem] = useState(false)
-  let web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
+  const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
+  const [account, setAccount] = useState('');
+  const [balance, setBalance] = useState('');
+
   const [value, setValue] = React.useState(0);
 
   function a11yProps(index: any) {
@@ -60,6 +65,13 @@ export default function UserWallet() {
   const handleClose = () => {
     setOpenRedeem(false);
   };
+
+  async function loadBlockchainData() {
+    const accounts = await web3.eth.getAccounts(console.log);
+    const accountBalance = await web3.eth.getBalance(accounts[0]);
+    setAccount(accounts[0]);
+    setBalance(web3.utils.fromWei(accountBalance));
+  }
 
   return (
     <div style={{
@@ -99,7 +111,8 @@ export default function UserWallet() {
                   >
                   Redeem
                 </Button>
-                <Button>Send Tokens</Button>
+                <Button
+                  onClick={loadBlockchainData}>Send Tokens</Button>
               </ButtonGroup>
             </Grid>
           </Grid>
@@ -113,7 +126,7 @@ export default function UserWallet() {
                   Account: {currentAddress}
                 </Typography>
                 <p>
-                  Balance: 2.22 ETH
+                  Balance: {balance}
                   </p>
               </Paper>
 
