@@ -19,14 +19,15 @@ const contractData = '0x60806040526040518060400160405280600c81526020017f4772616e
 //create transaction object
 const txObject = {
     nonce: web3.utils.toHex(txCount),
-    gasLimit: web3.utils.toHex(10000000) ,
+    //notice the gas limit because it is specific to Ropsten -- each test network and mainnet have their own gas limits
+    gasLimit: web3.utils.toHex(8000000) ,
     gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei')),
     data: contractData
 }
 
 
 //sign the transaction
-const tx = new Tx(txObject)
+const tx = new Tx(txObject,{'chain':'ropsten'})
 tx.sign(privateKey)
 
 const serializedTx = tx.serialize()
