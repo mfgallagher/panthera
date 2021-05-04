@@ -1,7 +1,5 @@
 import React, { useContext, useState } from 'react'
 import Web3 from 'web3'
-import { Symfoni } from "./../hardhat/SymfoniContext";
-import { CurrentAddressContext } from "./../hardhat/SymfoniContext";
 import { AppBar, Box, Button, ButtonGroup, createStyles, Dialog, Grid, IconButton, makeStyles, Paper, Tab, Tabs, Theme, Typography, WithStyles, withStyles } from '@material-ui/core';
 import MuiDialogTitle from '@material-ui/core/DialogTitle';
 import MuiDialogContent from '@material-ui/core/DialogContent';
@@ -38,7 +36,6 @@ const useStyles = makeStyles((theme: Theme) =>
 
 
 export default function UserWallet() {
-  const [currentAddress, setCurrentAddress] = useContext(CurrentAddressContext)
   const classes = useStyles()
   const [openRedeem, setOpenRedeem] = useState(false)
   const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
@@ -79,59 +76,57 @@ export default function UserWallet() {
     }}>
     { (!openRedeem) ? (
       <div>
-        <Symfoni>
-          <AppBar position="static">
-            <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
-              <Tab label="Wallet" {...a11yProps(0)} />
-              <Tab label="Account" {...a11yProps(1)} />
-            </Tabs>
-          </AppBar>
-          <TabPanel value={value} index={0}>
+        <AppBar position="static">
+          <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
+            <Tab label="Wallet" {...a11yProps(0)} />
+            <Tab label="Account" {...a11yProps(1)} />
+          </Tabs>
+        </AppBar>
+        <TabPanel value={value} index={0}>
 
-          <Grid item container >
-            <Grid item xs={6}>
-              <img src={PantherCoin} />
-            </Grid>
-
-            <Grid item xs={6}>
-              <Paper className={classes.paper}>
-                <Typography
-                variant="subtitle1"
-                color="secondary"
-                >
-                  Welcome to your Panthera Wallet!
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12}>
-              <ButtonGroup fullWidth>
-                <Button
-                  size="large"
-                  onClick={handleClickOpen}
-                  >
-                  Redeem
-                </Button>
-                <Button
-                  onClick={loadBlockchainData}>Send Tokens</Button>
-              </ButtonGroup>
-            </Grid>
+        <Grid item container >
+          <Grid item xs={6}>
+            <img src={PantherCoin} />
           </Grid>
 
-          </TabPanel>
+          <Grid item xs={6}>
+            <Paper className={classes.paper}>
+              <Typography
+              variant="subtitle1"
+              color="secondary"
+              >
+                Welcome to your Panthera Wallet!
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12}>
+            <ButtonGroup fullWidth>
+              <Button
+                size="large"
+                onClick={handleClickOpen}
+                >
+                Redeem
+              </Button>
+              <Button
+                onClick={loadBlockchainData}>Send Tokens</Button>
+            </ButtonGroup>
+          </Grid>
+        </Grid>
 
-          <TabPanel value={value} index={1}>
+        </TabPanel>
 
-              <Paper className={classes.paper}>
-                <Typography noWrap>
-                  Account: {currentAddress}
-                </Typography>
-                <p>
-                  Balance: {balance}
-                  </p>
-              </Paper>
+        <TabPanel value={value} index={1}>
 
-          </TabPanel>
-        </Symfoni>
+            <Paper className={classes.paper}>
+              <Typography noWrap>
+                Account: {account}
+              </Typography>
+              <p>
+                Balance: {balance}
+                </p>
+            </Paper>
+
+        </TabPanel>
       </div>
     ) : (
       <div>

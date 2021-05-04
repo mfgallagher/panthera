@@ -14,7 +14,11 @@ const config: HardhatUserConfig = {
   react: {
     providerPriority: ["web3modal", "hardhat"],
   },
+  defaultNetwork: "ropsten",
   networks: {
+    ropsten: {
+      url: 'https://ropsten.infura.io/v3/310967b8570b43659180bfbc81452dbb',
+    },
     hardhat: {
       "inject": false, // optional. If true, it will EXPOSE your mnemonic in your frontend code. Then it would be available as an "in-page browser wallet" / signer which can sign without confirmation.
       "accounts": {
