@@ -1,11 +1,17 @@
 import React, { useContext, useState } from 'react'
 import Web3 from 'web3'
-import { AppBar, Box, Button, ButtonGroup, createStyles, Dialog, Grid, IconButton, makeStyles, Paper, Tab, Tabs, Theme, Typography, WithStyles, withStyles } from '@material-ui/core';
+import { AbiItem } from 'web3-utils'
+import { AppBar, Box, Button, ButtonGroup, createStyles, Dialog, Grid, IconButton, makeStyles, Paper, Tab, Tabs, TextField, Theme, Typography, WithStyles, withStyles } from '@material-ui/core';
 import MuiDialogTitle from '@material-ui/core/DialogTitle';
 import MuiDialogContent from '@material-ui/core/DialogContent';
 import MuiDialogActions from '@material-ui/core/DialogActions';
 import CloseIcon from '@material-ui/icons/Close';
 import PantherCoin from './../images/panthercoinn.jpg'
+
+
+import { GRANOLA_ABI, GRANOLA_ADDRESS } from '../config'
+
+
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -39,8 +45,17 @@ export default function UserWallet() {
   const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
   const [account, setAccount] = useState('');
   const [balance, setBalance] = useState('');
-
   const [value, setValue] = React.useState(0);
+  const [recipient, setRecipient] = useState('');
+  const [amount, setAmount] = useState('');
+  const granolaContract = new web3.eth.Contract(GRANOLA_ABI as AbiItem[], GRANOLA_ADDRESS)
+
+  async function loadBlockchainData() {
+    const accounts = await web3.eth.getAccounts(console.log);
+    const accountBalance = await web3.eth.getBalance(accounts[0]);
+    setAccount(accounts[0]);
+    setBalance(web3.utils.fromWei(accountBalance));
+  }
 
   function a11yProps(index: any) {
   return {
@@ -53,20 +68,17 @@ export default function UserWallet() {
     setValue(newValue);
   };
 
+  async function handleTransfer() {
+    await granolaContract.methods.transfer(recipient, amount).send({from: account});
+  }
 
-  const handleClickOpen = () => {
+
+const handleClickOpen = () => {
     setOpenRedeem(true);
   };
   const handleClose = () => {
     setOpenRedeem(false);
   };
-
-  async function loadBlockchainData() {
-    const accounts = await web3.eth.getAccounts(console.log);
-    const accountBalance = await web3.eth.getBalance(accounts[0]);
-    setAccount(accounts[0]);
-    setBalance(web3.utils.fromWei(accountBalance));
-  }
 
   return (
     <div style={{
@@ -133,11 +145,29 @@ export default function UserWallet() {
           Redeem
         </DialogTitle>
         <DialogContent dividers>
-          <Typography gutterBottom>
-            This is where users will be able to redeem their tokens for benefits around campus.
-          </Typography>
+          <Grid item container>
+            <Grid item xs={12}>
+              <TextField
+                id="standard-basic"
+                label="Transfer To"
+                value = {recipient}
+                onChange = {(event) => { setRecipient(event.target.value);}}
+              />
+            </Grid>
+            <Grid item xs={12} >
+              <TextField
+                id="standard-basic"
+                label="Amount"
+                value = {amount}
+                onChange = {(event) => { setAmount(event.target.value);}}
+              />
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions>
+          <Button autoFocus onClick={handleTransfer} color="primary">
+            Transfer
+          </Button>
           <Button autoFocus onClick={handleClose} color="primary">
             Close
           </Button>
