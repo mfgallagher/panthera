@@ -115,10 +115,13 @@ const handleClickOpen = () => {
                 size="large"
                 onClick={handleClickOpen}
                 >
-                Redeem
+                Send Tokens
               </Button>
               <Button
-                onClick={loadBlockchainData}>Send Tokens</Button>
+                onClick={loadBlockchainData}
+              >
+                Fetch Data
+              </Button>
             </ButtonGroup>
           </Grid>
         </Grid>
