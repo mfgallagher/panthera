@@ -43,10 +43,10 @@
         "console"
       ]
     },
-    "/Users/michaelgallagher/Desktop/panthera/contracts/Panthera.sol": {
-      "lastModificationDate": 1619727824901,
-      "contentHash": "a6c47b577b50ded76b815391d8a31cd2",
-      "sourceName": "contracts/Panthera.sol",
+    "/Users/michaelgallagher/Desktop/panthera/contracts/Granola.sol": {
+      "lastModificationDate": 1620329313291,
+      "contentHash": "12d86e05f344b7b09b2810d1067dbbdd",
+      "sourceName": "contracts/Granola.sol",
       "solcConfig": {
         "version": "0.7.3",
         "settings": {
@@ -84,7 +84,52 @@
         "^0.7.3"
       ],
       "artifacts": [
-        "Token"
+        "GNRToken",
+        "SafeMath"
+      ]
+    },
+    "/Users/michaelgallagher/Desktop/panthera/contracts/side.sol": {
+      "lastModificationDate": 1620329048483,
+      "contentHash": "292d6cfdde9bbebd219ffcfdc192d59b",
+      "sourceName": "contracts/side.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "devdoc",
+                "userdoc",
+                "storageLayout",
+                "evm.gasEstimates"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "metadata": {
+            "useLiteralContent": true
+          }
+        }
+      },
+      "imports": [
+        "hardhat/console.sol"
+      ],
+      "versionPragmas": [
+        "^0.7.3"
+      ],
+      "artifacts": [
+        "Granola"
       ]
     }
   }

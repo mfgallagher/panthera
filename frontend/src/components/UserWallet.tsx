@@ -33,8 +33,6 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 
-
-
 export default function UserWallet() {
   const classes = useStyles()
   const [openRedeem, setOpenRedeem] = useState(false)

@@ -11,7 +11,7 @@ import {
   PopulatedTransaction,
   Contract,
   ContractTransaction,
-  Overrides,
+  PayableOverrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -21,38 +21,39 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface PantheraInterface extends ethers.utils.Interface {
   functions: {
-    "balanceOf(address)": FunctionFragment;
-    "name()": FunctionFragment;
-    "owner()": FunctionFragment;
-    "symbol()": FunctionFragment;
-    "totalSupply()": FunctionFragment;
-    "transfer(address,uint256)": FunctionFragment;
+    "distributeTokens(uint256)": FunctionFragment;
+    "tokenContract()": FunctionFragment;
+    "tokenPrice()": FunctionFragment;
   };
 
-  encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(functionFragment: "name", values?: undefined): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "totalSupply",
+    functionFragment: "distributeTokens",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "tokenContract",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "transfer",
-    values: [string, BigNumberish]
+    functionFragment: "tokenPrice",
+    values?: undefined
   ): string;
 
-  decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "totalSupply",
+    functionFragment: "distributeTokens",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "transfer", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "tokenContract",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "tokenPrice", data: BytesLike): Result;
 
-  events: {};
+  events: {
+    "Sell(address,uint256)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "Sell"): EventFragment;
 }
 
 export class Panthera extends Contract {
@@ -99,190 +100,110 @@ export class Panthera extends Contract {
   interface: PantheraInterface;
 
   functions: {
-    balanceOf(account: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    "balanceOf(address)"(
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    name(overrides?: CallOverrides): Promise<[string]>;
-
-    "name()"(overrides?: CallOverrides): Promise<[string]>;
-
-    owner(overrides?: CallOverrides): Promise<[string]>;
-
-    "owner()"(overrides?: CallOverrides): Promise<[string]>;
-
-    symbol(overrides?: CallOverrides): Promise<[string]>;
-
-    "symbol()"(overrides?: CallOverrides): Promise<[string]>;
-
-    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    "totalSupply()"(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    transfer(
-      to: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    distributeTokens(
+      _numberOfTokens: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    "transfer(address,uint256)"(
-      to: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    "distributeTokens(uint256)"(
+      _numberOfTokens: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    tokenContract(overrides?: CallOverrides): Promise<[string]>;
+
+    "tokenContract()"(overrides?: CallOverrides): Promise<[string]>;
+
+    tokenPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "tokenPrice()"(overrides?: CallOverrides): Promise<[BigNumber]>;
   };
 
-  balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-  "balanceOf(address)"(
-    account: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  name(overrides?: CallOverrides): Promise<string>;
-
-  "name()"(overrides?: CallOverrides): Promise<string>;
-
-  owner(overrides?: CallOverrides): Promise<string>;
-
-  "owner()"(overrides?: CallOverrides): Promise<string>;
-
-  symbol(overrides?: CallOverrides): Promise<string>;
-
-  "symbol()"(overrides?: CallOverrides): Promise<string>;
-
-  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-  "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-  transfer(
-    to: string,
-    amount: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
+  distributeTokens(
+    _numberOfTokens: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  "transfer(address,uint256)"(
-    to: string,
-    amount: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
+  "distributeTokens(uint256)"(
+    _numberOfTokens: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  tokenContract(overrides?: CallOverrides): Promise<string>;
+
+  "tokenContract()"(overrides?: CallOverrides): Promise<string>;
+
+  tokenPrice(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "tokenPrice()"(overrides?: CallOverrides): Promise<BigNumber>;
 
   callStatic: {
-    balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "balanceOf(address)"(
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    name(overrides?: CallOverrides): Promise<string>;
-
-    "name()"(overrides?: CallOverrides): Promise<string>;
-
-    owner(overrides?: CallOverrides): Promise<string>;
-
-    "owner()"(overrides?: CallOverrides): Promise<string>;
-
-    symbol(overrides?: CallOverrides): Promise<string>;
-
-    "symbol()"(overrides?: CallOverrides): Promise<string>;
-
-    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-    transfer(
-      to: string,
-      amount: BigNumberish,
+    distributeTokens(
+      _numberOfTokens: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "transfer(address,uint256)"(
-      to: string,
-      amount: BigNumberish,
+    "distributeTokens(uint256)"(
+      _numberOfTokens: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    tokenContract(overrides?: CallOverrides): Promise<string>;
+
+    "tokenContract()"(overrides?: CallOverrides): Promise<string>;
+
+    tokenPrice(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "tokenPrice()"(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
-  filters: {};
+  filters: {
+    Sell(
+      _buyer: null,
+      _amount: null
+    ): TypedEventFilter<
+      [string, BigNumber],
+      { _buyer: string; _amount: BigNumber }
+    >;
+  };
 
   estimateGas: {
-    balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "balanceOf(address)"(
-      account: string,
-      overrides?: CallOverrides
+    distributeTokens(
+      _numberOfTokens: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    name(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "name()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "owner()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-    symbol(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "symbol()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-    transfer(
-      to: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    "distributeTokens(uint256)"(
+      _numberOfTokens: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "transfer(address,uint256)"(
-      to: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    tokenContract(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "tokenContract()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    tokenPrice(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "tokenPrice()"(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    balanceOf(
-      account: string,
-      overrides?: CallOverrides
+    distributeTokens(
+      _numberOfTokens: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "balanceOf(address)"(
-      account: string,
-      overrides?: CallOverrides
+    "distributeTokens(uint256)"(
+      _numberOfTokens: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    tokenContract(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    "name()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    "tokenContract()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    tokenPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    "owner()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    "symbol()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    "totalSupply()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    transfer(
-      to: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "transfer(address,uint256)"(
-      to: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    "tokenPrice()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

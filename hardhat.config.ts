@@ -7,6 +7,9 @@ import "@symfoni/hardhat-react";
 import "hardhat-typechain";
 import "@typechain/ethers-v5";
 
+const INFURA_API_KEY = "310967b8570b43659180bfbc81452dbb"
+
+const ROPSTEN_PRIVATE_KEY = "2bef3d76e0983dd369693da25f4f07a6850dec930118ee623c26ecbedf51b86e"
 
 
 const config: HardhatUserConfig = {
@@ -17,14 +20,8 @@ const config: HardhatUserConfig = {
   defaultNetwork: "ropsten",
   networks: {
     ropsten: {
-      url: 'https://ropsten.infura.io/v3/310967b8570b43659180bfbc81452dbb',
-    },
-    hardhat: {
-      "inject": false, // optional. If true, it will EXPOSE your mnemonic in your frontend code. Then it would be available as an "in-page browser wallet" / signer which can sign without confirmation.
-      "accounts": {
-        "mnemonic": "test test test test test test test test test test test junk" // test test test test test test test test test test test junk
-      },
-      chainId: 31337
+      url: `https://ropsten.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [`0x${ROPSTEN_PRIVATE_KEY}`]
     }
   }
 };
