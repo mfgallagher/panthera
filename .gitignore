@@ -2,3 +2,5 @@ node_modules/
 
 frontend/src/hardhat/deployments/hardhat
 frontend/src/hardhat/deployments/localhost
+
+.env

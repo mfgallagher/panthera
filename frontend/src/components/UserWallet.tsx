@@ -151,10 +151,14 @@ const handleClickOpen = () => {
           <Grid item container>
             <Grid item xs={12}>
               <TextField
-                id="standard-basic"
+                id="filled-full-width"
                 label="Transfer To"
-                value = {recipient}
-                onChange = {(event) => { setRecipient(event.target.value);}}
+                style={{ margin: 8 }}
+                fullWidth
+                margin="normal"
+                value={recipient}
+                onChange={(event) => { setRecipient(event.target.value) }}
+                variant="filled"
               />
             </Grid>
             <Grid item xs={12} >
@@ -164,6 +168,7 @@ const handleClickOpen = () => {
                 value = {amount}
                 onChange = {(event) => { setAmount(event.target.value);}}
               />
+
             </Grid>
           </Grid>
         </DialogContent>
@@ -213,6 +218,7 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       margin: 0,
+      width: 500,
       padding: theme.spacing(2),
     },
     closeButton: {
@@ -225,6 +231,7 @@ const styles = (theme: Theme) =>
 
 const DialogContent = withStyles((theme: Theme) => ({
   root: {
+    width: 500,
     padding: theme.spacing(2),
   },
 }))(MuiDialogContent);

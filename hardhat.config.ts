@@ -7,9 +7,9 @@ import "@symfoni/hardhat-react";
 import "hardhat-typechain";
 import "@typechain/ethers-v5";
 
-const INFURA_API_KEY = "310967b8570b43659180bfbc81452dbb"
+const INFURA_API_KEY = {process.env.REACT_APP_INFURA_API_KEY};
 
-const ROPSTEN_PRIVATE_KEY = "2bef3d76e0983dd369693da25f4f07a6850dec930118ee623c26ecbedf51b86e"
+const ROPSTEN_PRIVATE_KEY = {process.env.REACT_APP_ROPSTEN_PRIVATE_KEY};
 
 
 const config: HardhatUserConfig = {
