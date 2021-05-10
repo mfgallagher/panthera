@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
 import { AppBar, Box, Button, ButtonGroup, createStyles, Dialog, Grid, IconButton, makeStyles, Paper, Tab, Tabs, TextField, Theme, Typography, WithStyles, withStyles } from '@material-ui/core';
@@ -51,11 +51,20 @@ export default function UserWallet() {
   const granolaContract = new web3.eth.Contract(GRANOLA_ABI as AbiItem[], GRANOLA_ADDRESS)
 
   async function loadBlockchainData() {
-    const accounts = await web3.eth.getAccounts(console.log);
-    const accountBalance = await web3.eth.getBalance(accounts[0]);
+    const accounts = await web3.eth.getAccounts();
     setAccount(accounts[0]);
-    setBalance(web3.utils.fromWei(accountBalance));
+    const granolaBalance = await granolaContract.methods.balanceOf(accounts[0]).call();
+    console.log(granolaBalance)
+    setBalance(granolaBalance);
   }
+
+  useEffect(() => {
+    const blockchainData = async() => {
+      await loadBlockchainData();
+    };
+
+    blockchainData();
+  }, [])
 
   function a11yProps(index: any) {
   return {
@@ -135,7 +144,7 @@ const handleClickOpen = () => {
                 Account: {account}
               </Typography>
               <p>
-                Balance: {balance}
+                Balance: {balance} GRN
                 </p>
             </Paper>
 
