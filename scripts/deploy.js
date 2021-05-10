@@ -13,11 +13,6 @@ async function main() {
   const granolaToken = await Granola.deploy();
 
   console.log("Token address:", granolaToken.address);
-
-  // const Panthera = await ethers.getContractFactory("Panthera");
-  // const pantheraToken = await Panthera.deploy();
-  //
-  // console.log("Token address:", pantheraToken.address);
 }
 
 main()

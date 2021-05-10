@@ -7,11 +7,6 @@ import "@symfoni/hardhat-react";
 import "hardhat-typechain";
 import "@typechain/ethers-v5";
 
-const INFURA_API_KEY = {process.env.REACT_APP_INFURA_API_KEY};
-
-const ROPSTEN_PRIVATE_KEY = {process.env.REACT_APP_ROPSTEN_PRIVATE_KEY};
-
-
 const config: HardhatUserConfig = {
   solidity: "0.7.3",
   react: {
@@ -20,8 +15,8 @@ const config: HardhatUserConfig = {
   defaultNetwork: "ropsten",
   networks: {
     ropsten: {
-      url: `https://ropsten.infura.io/v3/${INFURA_API_KEY}`,
-      accounts: [`0x${ROPSTEN_PRIVATE_KEY}`]
+      url: `https://ropsten.infura.io/v3/${process.env.REACT_APP_INFURA_API_KEY}`,
+      accounts: [`0x${process.env.REACT_APP_ROPSTEN_PRIVATE_KEY}`]
     }
   }
 };
