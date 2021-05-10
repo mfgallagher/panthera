@@ -1,13 +1,17 @@
-import React, { useContext, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Web3 from 'web3'
-import { Symfoni } from "./../hardhat/SymfoniContext";
-import { CurrentAddressContext } from "./../hardhat/SymfoniContext";
-import { AppBar, Box, Button, ButtonGroup, createStyles, Dialog, Grid, IconButton, makeStyles, Paper, Tab, Tabs, Theme, Typography, WithStyles, withStyles } from '@material-ui/core';
+import { AbiItem } from 'web3-utils'
+import { AppBar, Box, Button, ButtonGroup, createStyles, Dialog, Grid, IconButton, makeStyles, Paper, Tab, Tabs, TextField, Theme, Typography, WithStyles, withStyles } from '@material-ui/core';
 import MuiDialogTitle from '@material-ui/core/DialogTitle';
 import MuiDialogContent from '@material-ui/core/DialogContent';
 import MuiDialogActions from '@material-ui/core/DialogActions';
 import CloseIcon from '@material-ui/icons/Close';
 import PantherCoin from './../images/panthercoinn.jpg'
+
+
+import { GRANOLA_ABI, GRANOLA_ADDRESS } from '../config'
+
+
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -36,11 +40,31 @@ const useStyles = makeStyles((theme: Theme) =>
 
 
 export default function UserWallet() {
-  const [currentAddress, setCurrentAddress] = useContext(CurrentAddressContext)
   const classes = useStyles()
   const [openRedeem, setOpenRedeem] = useState(false)
-  let web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
+  const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
+  const [account, setAccount] = useState('');
+  const [balance, setBalance] = useState('');
   const [value, setValue] = React.useState(0);
+  const [recipient, setRecipient] = useState('');
+  const [amount, setAmount] = useState('');
+  const granolaContract = new web3.eth.Contract(GRANOLA_ABI as AbiItem[], GRANOLA_ADDRESS)
+
+  async function loadBlockchainData() {
+    const accounts = await web3.eth.getAccounts();
+    setAccount(accounts[0]);
+    const granolaBalance = await granolaContract.methods.balanceOf(accounts[0]).call();
+    console.log(granolaBalance)
+    setBalance(granolaBalance);
+  }
+
+  useEffect(() => {
+    const blockchainData = async() => {
+      await loadBlockchainData();
+    };
+
+    blockchainData();
+  }, [])
 
   function a11yProps(index: any) {
   return {
@@ -53,8 +77,12 @@ export default function UserWallet() {
     setValue(newValue);
   };
 
+  async function handleTransfer() {
+    await granolaContract.methods.transfer(recipient, amount).send({from: account});
+  }
 
-  const handleClickOpen = () => {
+
+const handleClickOpen = () => {
     setOpenRedeem(true);
   };
   const handleClose = () => {
@@ -67,58 +95,60 @@ export default function UserWallet() {
     }}>
     { (!openRedeem) ? (
       <div>
-        <Symfoni>
-          <AppBar position="static">
-            <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
-              <Tab label="Wallet" {...a11yProps(0)} />
-              <Tab label="Account" {...a11yProps(1)} />
-            </Tabs>
-          </AppBar>
-          <TabPanel value={value} index={0}>
+        <AppBar position="static">
+          <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
+            <Tab label="Wallet" {...a11yProps(0)} />
+            <Tab label="Account" {...a11yProps(1)} />
+          </Tabs>
+        </AppBar>
+        <TabPanel value={value} index={0}>
 
-          <Grid item container >
-            <Grid item xs={6}>
-              <img src={PantherCoin} />
-            </Grid>
-
-            <Grid item xs={6}>
-              <Paper className={classes.paper}>
-                <Typography
-                variant="subtitle1"
-                color="secondary"
-                >
-                  Welcome to your Panthera Wallet!
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12}>
-              <ButtonGroup fullWidth>
-                <Button
-                  size="large"
-                  onClick={handleClickOpen}
-                  >
-                  Redeem
-                </Button>
-                <Button>Send Tokens</Button>
-              </ButtonGroup>
-            </Grid>
+        <Grid item container >
+          <Grid item xs={6}>
+            <img src={PantherCoin} />
           </Grid>
 
-          </TabPanel>
+          <Grid item xs={6}>
+            <Paper className={classes.paper}>
+              <Typography
+              variant="subtitle1"
+              color="secondary"
+              >
+                Welcome to your Panthera Wallet!
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12}>
+            <ButtonGroup fullWidth>
+              <Button
+                size="large"
+                onClick={handleClickOpen}
+                >
+                Send Tokens
+              </Button>
+              <Button
+                onClick={loadBlockchainData}
+              >
+                Fetch Data
+              </Button>
+            </ButtonGroup>
+          </Grid>
+        </Grid>
 
-          <TabPanel value={value} index={1}>
+        </TabPanel>
 
-              <Paper className={classes.paper}>
-                <Typography noWrap>
-                  Account: {currentAddress}
-                </Typography>
-                <p>
-                  Balance: 2.22 ETH
-                  </p>
-              </Paper>
+        <TabPanel value={value} index={1}>
 
-          </TabPanel>
-        </Symfoni>
+            <Paper className={classes.paper}>
+              <Typography noWrap>
+                Account: {account}
+              </Typography>
+              <p>
+                Balance: {balance} GRN
+                </p>
+            </Paper>
+
+        </TabPanel>
       </div>
     ) : (
       <div>
@@ -127,11 +157,34 @@ export default function UserWallet() {
           Redeem
         </DialogTitle>
         <DialogContent dividers>
-          <Typography gutterBottom>
-            This is where users will be able to redeem their tokens for benefits around campus.
-          </Typography>
+          <Grid item container>
+            <Grid item xs={12}>
+              <TextField
+                id="filled-full-width"
+                label="Transfer To"
+                style={{ margin: 8 }}
+                fullWidth
+                margin="normal"
+                value={recipient}
+                onChange={(event) => { setRecipient(event.target.value) }}
+                variant="filled"
+              />
+            </Grid>
+            <Grid item xs={12} >
+              <TextField
+                id="standard-basic"
+                label="Amount"
+                value = {amount}
+                onChange = {(event) => { setAmount(event.target.value);}}
+              />
+
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions>
+          <Button autoFocus onClick={handleTransfer} color="primary">
+            Transfer
+          </Button>
           <Button autoFocus onClick={handleClose} color="primary">
             Close
           </Button>
@@ -174,6 +227,7 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       margin: 0,
+      width: 500,
       padding: theme.spacing(2),
     },
     closeButton: {
@@ -186,6 +240,7 @@ const styles = (theme: Theme) =>
 
 const DialogContent = withStyles((theme: Theme) => ({
   root: {
+    width: 500,
     padding: theme.spacing(2),
   },
 }))(MuiDialogContent);
