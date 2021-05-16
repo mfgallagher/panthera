@@ -1,9 +1,11 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import Web3 from 'web3'
 import './App.css'
 import UserWallet from "./components/UserWallet"
+import NoWalletDetected from "./components/NoWalletDetected"
 import { AppBar, createStyles, IconButton, makeStyles, Theme, Toolbar, Typography } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
+import detectEthereumProvider from '@metamask/detect-provider';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -16,8 +18,17 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
+async function getProvider() {
+  const wallet =  await detectEthereumProvider();
+  return wallet;
+}
+
+const provider = getProvider();
+
+
 function App() {
   const classes = useStyles();
+
 
 
   return (

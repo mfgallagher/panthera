@@ -7,8 +7,7 @@ import MuiDialogContent from '@material-ui/core/DialogContent';
 import MuiDialogActions from '@material-ui/core/DialogActions';
 import CloseIcon from '@material-ui/icons/Close';
 import PantherCoin from './../images/panthercoinn.jpg'
-
-
+import NoWalletDetected from "./NoWalletDetected"
 import { GRANOLA_ABI, GRANOLA_ADDRESS } from '../config'
 
 
@@ -45,17 +44,20 @@ export default function UserWallet() {
   const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
   const [account, setAccount] = useState('');
   const [balance, setBalance] = useState('');
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = useState(0);
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const granolaContract = new web3.eth.Contract(GRANOLA_ABI as AbiItem[], GRANOLA_ADDRESS)
+  const [hasProvider, setHasProvider] = useState(false);
 
   async function loadBlockchainData() {
     const accounts = await web3.eth.getAccounts();
-    setAccount(accounts[0]);
-    const granolaBalance = await granolaContract.methods.balanceOf(accounts[0]).call();
-    console.log(granolaBalance)
-    setBalance(granolaBalance);
+    if(accounts.length !== 0) {
+      setHasProvider(true);
+      setAccount(accounts[0]);
+      const granolaBalance = await granolaContract.methods.balanceOf(accounts[0]).call();
+      setBalance(granolaBalance);
+    }
   }
 
   useEffect(() => {
@@ -65,6 +67,8 @@ export default function UserWallet() {
 
     blockchainData();
   }, [])
+
+
 
   function a11yProps(index: any) {
   return {
@@ -88,6 +92,15 @@ const handleClickOpen = () => {
   const handleClose = () => {
     setOpenRedeem(false);
   };
+
+  if(!hasProvider) {
+    return (
+      <div>
+        <NoWalletDetected />
+      </div>
+    )
+  };
+
 
   return (
     <div style={{
