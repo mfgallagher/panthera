@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
-import { AppBar, Box, Button, ButtonGroup, createStyles, Dialog, Grid, IconButton, makeStyles, Paper, Tab, Tabs, TextField, Theme, Typography, WithStyles, withStyles } from '@material-ui/core';
+import { AppBar, Box, Button, ButtonGroup, createStyles, Dialog, Grid, IconButton, InputAdornment, makeStyles, Paper, Tab, Tabs, TextField, Theme, Typography, WithStyles, withStyles } from '@material-ui/core';
 import MuiDialogTitle from '@material-ui/core/DialogTitle';
 import MuiDialogContent from '@material-ui/core/DialogContent';
 import MuiDialogActions from '@material-ui/core/DialogActions';
 import CloseIcon from '@material-ui/icons/Close';
-import PantherCoin from './../images/panthercoinn.jpg'
-import NoWalletDetected from "./NoWalletDetected"
-import { GRANOLA_ABI, GRANOLA_ADDRESS } from '../config'
+import PantherCoin from './../images/panthercoinn.jpg';
+import NoWalletDetected from './NoWalletDetected';
+import { GRANOLA_ABI, GRANOLA_ADDRESS } from '../config';
+import QrReader from 'react-qr-scanner';
+import { useSnackbar } from 'notistack';
 
 
 
@@ -34,21 +36,33 @@ const useStyles = makeStyles((theme: Theme) =>
       maxWidth: '300',
       maxHeight: '300',
     },
+    qr: {
+      height: 240,
+      width: 320,
+    }
   }),
 );
 
 
 export default function UserWallet() {
   const classes = useStyles()
-  const [openRedeem, setOpenRedeem] = useState(false)
   const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
+  const granolaContract = new web3.eth.Contract(GRANOLA_ABI as AbiItem[], GRANOLA_ADDRESS)
+
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  const [openRedeem, setOpenRedeem] = useState(false)
   const [account, setAccount] = useState('');
   const [balance, setBalance] = useState('');
   const [value, setValue] = useState(0);
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
-  const granolaContract = new web3.eth.Contract(GRANOLA_ABI as AbiItem[], GRANOLA_ADDRESS)
   const [hasProvider, setHasProvider] = useState(false);
+  const [delay, setDelay] = useState(100);
+  const [result, setResult] = useState('No result');
+  const [qrData, setQrData] = useState('');
+
+
 
   async function loadBlockchainData() {
     const accounts = await web3.eth.getAccounts();
@@ -82,9 +96,36 @@ export default function UserWallet() {
   };
 
   async function handleTransfer() {
-    await granolaContract.methods.transfer(recipient, amount).send({from: account});
+    const tokenAmount = ((+(amount.replace('.', ''))/4).toFixed()).toString() ;
+    console.log(tokenAmount);
+    await granolaContract.methods.transfer(recipient, tokenAmount).send({from: account})
+    .then((error, result) => {
+      console.log('check');
+      if (!error) {
+        console.log('ok')
+      } else {
+          if (error.message.includes("User denied")) {
+              enqueueSnackbar("You rejected the transaction on Metamask!")
+          } else {
+              enqueueSnackbar(error.message)
+              console.log(error.message)
+          }
+    } }
+  )
+  .catch((err) => {
+    enqueueSnackbar(err.message, { variant:'error' })
+  });
   }
 
+
+const handleScan = (data) => {
+  if(!data) {
+    console.log(data);
+    return
+  }
+  setRecipient((data.text).slice(9));
+
+}
 
 const handleClickOpen = () => {
     setOpenRedeem(true);
@@ -118,7 +159,7 @@ const handleClickOpen = () => {
 
         <Grid item container >
           <Grid item xs={6}>
-            <img src={PantherCoin} />
+            <img src={PantherCoin} alt={"panthera"} />
           </Grid>
 
           <Grid item xs={6}>
@@ -182,14 +223,25 @@ const handleClickOpen = () => {
                 onChange={(event) => { setRecipient(event.target.value) }}
                 variant="filled"
               />
+              <QrReader
+                delay={delay}
+                style={{ height: 240, width: 320 }}
+                onError={(err) => console.log('hi')}
+                onScan={(data) => handleScan(data)}
+              />
+              <p> {result} </p>
             </Grid>
             <Grid item xs={12} >
+
               <TextField
-                id="standard-basic"
                 label="Amount"
-                value = {amount}
+                variant="standard"
+                value={amount}
+                InputProps={{
+            startAdornment: <InputAdornment position="start">$</InputAdornment>,
+          }}
                 onChange = {(event) => { setAmount(event.target.value);}}
-              />
+                />
 
             </Grid>
           </Grid>
