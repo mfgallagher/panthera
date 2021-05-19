@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
-import { AppBar, Box, Button, ButtonGroup, createStyles, Dialog, Grid, IconButton, makeStyles, Paper, Tab, Tabs, TextField, Theme, Typography, WithStyles, withStyles } from '@material-ui/core';
-import MuiDialogTitle from '@material-ui/core/DialogTitle';
-import MuiDialogContent from '@material-ui/core/DialogContent';
-import MuiDialogActions from '@material-ui/core/DialogActions';
-import CloseIcon from '@material-ui/icons/Close';
-import PantherCoin from './../images/panthercoinn.jpg'
-
-
-import { GRANOLA_ABI, GRANOLA_ADDRESS } from '../config'
+import { AppBar, Box, Button, ButtonGroup, createStyles, Grid, InputAdornment, makeStyles, Paper, Tab, Tabs, TextField, Theme, Typography, } from '@material-ui/core';
+import Panthera from './../images/panthera.png';
+import GranolaCoin from './../images/GRN.png';
+import GranolaScoop from './../images/GranolaScoop.png';
+import NoWalletDetected from './NoWalletDetected';
+import { GRANOLA_ABI, GRANOLA_ADDRESS } from '../config';
+import QrReader from 'react-qr-scanner';
+import { useSnackbar } from 'notistack';
 
 
 
@@ -25,6 +24,13 @@ const useStyles = makeStyles((theme: Theme) =>
       maxWidth: 800,
       backgroundColor: '#3368ff'
     },
+    lowPaper: {
+      margin: 'center',
+      padding: 10,
+      height: 100,
+      maxWidth: 600,
+      backgroundColor: '#3368ff'
+    },
     image: {
       width: 128,
       height: 128,
@@ -35,27 +41,42 @@ const useStyles = makeStyles((theme: Theme) =>
       maxWidth: '300',
       maxHeight: '300',
     },
+    qr: {
+      height: 240,
+      width: 320,
+    }
   }),
 );
 
 
 export default function UserWallet() {
   const classes = useStyles()
-  const [openRedeem, setOpenRedeem] = useState(false)
   const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
+  const granolaContract = new web3.eth.Contract(GRANOLA_ABI as AbiItem[], GRANOLA_ADDRESS)
+
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  const [openRedeem, setOpenRedeem] = useState(false)
   const [account, setAccount] = useState('');
   const [balance, setBalance] = useState('');
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = useState(0);
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
-  const granolaContract = new web3.eth.Contract(GRANOLA_ABI as AbiItem[], GRANOLA_ADDRESS)
+  const [hasProvider, setHasProvider] = useState(false);
+  const [delay, setDelay] = useState(100);
+  const [result, setResult] = useState('No result');
+  const [qrData, setQrData] = useState('');
+
+
 
   async function loadBlockchainData() {
     const accounts = await web3.eth.getAccounts();
-    setAccount(accounts[0]);
-    const granolaBalance = await granolaContract.methods.balanceOf(accounts[0]).call();
-    console.log(granolaBalance)
-    setBalance(granolaBalance);
+    if(accounts.length !== 0) {
+      setHasProvider(true);
+      setAccount(accounts[0]);
+      const granolaBalance = await granolaContract.methods.balanceOf(accounts[0]).call();
+      setBalance(granolaBalance);
+    }
   }
 
   useEffect(() => {
@@ -64,99 +85,204 @@ export default function UserWallet() {
     };
 
     blockchainData();
-  }, [])
+  }, [recipient])
+
+
 
   function a11yProps(index: any) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
+    return {
+      id: `simple-tab-${index}`,
+      'aria-controls': `simple-tabpanel-${index}`,
+    };
+  }
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setRecipient('');
     setValue(newValue);
   };
 
-  async function handleTransfer() {
-    await granolaContract.methods.transfer(recipient, amount).send({from: account});
+  const handleScan = (data) => {
+    if(!data) {
+      console.log(data);
+      return
+    }
+    setRecipient((data.text).slice(9));
   }
 
+  const convertToGranola = (dollars) => {
+    let convert = +((+amount).toFixed(2));
+    let convertString = ((convert * 100) / 400).toFixed().toString();
+    console.log(convertString);
+    return convertString;
+  }
 
-const handleClickOpen = () => {
-    setOpenRedeem(true);
+  async function handleTransfer() {
+    if(!recipient) {
+      enqueueSnackbar("Please enter or scan an address to transfer to", {
+         variant:'error',
+         autoHideDuration: 3000
+       })
+       return
+    }
+
+    if(!amount) {
+      enqueueSnackbar("Please enter the amount spent", {
+         variant:'error',
+         autoHideDuration: 3000
+       })
+       return
+    }
+    const tokenAmount = convertToGranola(amount);
+    await granolaContract.methods.transfer(recipient, tokenAmount)
+    .send({from: account})
+    .then((result) => {
+        console.log(result);
+        enqueueSnackbar(
+        <a
+          href={`https://ropsten.etherscan.io/tx/${result.transactionHash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: '#ffffff'
+          }}
+        >
+          Success! View your transaction by clicking here
+        </a>, {
+          variant:'success',
+          autoHideDuration: 3000
+        })
+        setRecipient('');
+     })
+     .catch((err) => {
+       enqueueSnackbar(err.message, {
+          variant:'error',
+          autoHideDuration: 3000
+        })
+        console.log(err)
+    });
+  }
+
+  async function handleSend() {
+    if( (+balance) < (+amount) ) {
+      enqueueSnackbar("Insufficient funds for this transaction", {
+         variant:'error',
+         autoHideDuration: 3000
+       })
+       return
+    }
+    if(!recipient) {
+      enqueueSnackbar("Please enter or scan an address to transfer to", {
+         variant:'error',
+         autoHideDuration: 3000
+       })
+       return
+    }
+
+    if(!amount) {
+      enqueueSnackbar("Please enter the amount to send", {
+         variant:'error',
+         autoHideDuration: 3000
+       })
+       return
+    }
+
+    await granolaContract.methods.transfer(recipient, amount)
+    .send({from: account})
+    .then((result) => {
+        console.log(result);
+        enqueueSnackbar(
+        <a
+          href={`https://ropsten.etherscan.io/tx/${result.transactionHash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: '#ffffff'
+          }}
+        >
+          Success! View your transaction by clicking here
+        </a>, {
+          variant:'success',
+          autoHideDuration: 3000
+        })
+        setRecipient('');
+     })
+     .catch((err) => {
+       enqueueSnackbar(err.message, {
+          variant:'error',
+          autoHideDuration: 3000
+        })
+        console.log(err)
+    });
+  }
+
+  async function handleRedeem() {
+  setRecipient(GRANOLA_ADDRESS);
+  await granolaContract.methods.transfer(recipient, amount)
+  .send({from: account})
+  .then((result) => {
+      console.log(result);
+      enqueueSnackbar(`${amount} Tokens Sent!`, {
+        variant:'success',
+        autoHideDuration: 2000
+      })
+      setAccount('');
+   })
+   .catch((err) => {
+     enqueueSnackbar(err.message, {
+        variant:'error',
+        autoHideDuration: 3000
+      })
+      console.log(err)
+    });
+  }
+
+  if(!hasProvider) {
+    return (
+      <div>
+        <NoWalletDetected />
+      </div>
+    )
   };
-  const handleClose = () => {
-    setOpenRedeem(false);
-  };
+
 
   return (
     <div style={{
       backgroundColor: '#80a1ff'
     }}>
-    { (!openRedeem) ? (
       <div>
         <AppBar position="static">
           <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
-            <Tab label="Wallet" {...a11yProps(0)} />
-            <Tab label="Account" {...a11yProps(1)} />
+            <Tab label="Home" {...a11yProps(0)} />
+            <Tab label="Process Transaction" {...a11yProps(1)} />
+            <Tab label="Send Tokens" {...a11yProps(2)} />
+            <Tab label="Redeem" {...a11yProps(3)} />
+            <Tab label="Account" {...a11yProps(4)} />
           </Tabs>
         </AppBar>
+
+
         <TabPanel value={value} index={0}>
+          <Grid item container >
+            <Grid item xs={4}>
+              <img src={Panthera} alt={"panthera"} />
+            </Grid>
 
-        <Grid item container >
-          <Grid item xs={6}>
-            <img src={PantherCoin} />
-          </Grid>
-
-          <Grid item xs={6}>
-            <Paper className={classes.paper}>
-              <Typography
-              variant="subtitle1"
-              color="secondary"
-              >
-                Welcome to your Panthera Wallet!
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12}>
-            <ButtonGroup fullWidth>
-              <Button
-                size="large"
-                onClick={handleClickOpen}
+            <Grid item xs={8}>
+              <Paper className={classes.paper}>
+                <Typography
+                variant="subtitle1"
+                style={{ color: "#ffffff" }}
                 >
-                Send Tokens
-              </Button>
-              <Button
-                onClick={loadBlockchainData}
-              >
-                Fetch Data
-              </Button>
-            </ButtonGroup>
-          </Grid>
-        </Grid>
+                  Welcome to your Panthera Wallet! Panthera is a decentralized rewards system where consumers are able to make purchases at Middlebury businesses and receive tokens that can be later redeemed. By having a rewards system with digital currency, members of the Middlebury College community will be encouraged to shop on-campus more consistently, helping to fuel the local economy while participating in the excitement of the cryptocurrency world.
+                </Typography>
+              </Paper>
+            </Grid>
 
+
+          </Grid>
         </TabPanel>
 
         <TabPanel value={value} index={1}>
-
-            <Paper className={classes.paper}>
-              <Typography noWrap>
-                Account: {account}
-              </Typography>
-              <p>
-                Balance: {balance} GRN
-                </p>
-            </Paper>
-
-        </TabPanel>
-      </div>
-    ) : (
-      <div>
-        <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={openRedeem}>
-        <DialogTitle id="customized-dialog-title" onClose={handleClose}>
-          Redeem
-        </DialogTitle>
-        <DialogContent dividers>
           <Grid item container>
             <Grid item xs={12}>
               <TextField
@@ -169,29 +295,149 @@ const handleClickOpen = () => {
                 onChange={(event) => { setRecipient(event.target.value) }}
                 variant="filled"
               />
+              <QrReader
+                delay={delay}
+                style={{ height: 240, width: 320 }}
+                onError={(err) => console.log(err)}
+                onScan={(data) => handleScan(data)}
+              />
             </Grid>
+
             <Grid item xs={12} >
               <TextField
-                id="standard-basic"
                 label="Amount"
-                value = {amount}
+                variant="standard"
+                value={amount}
+                InputProps={{
+                  startAdornment:
+                    <InputAdornment position="start">
+                      $
+                    </InputAdornment>
+                }}
                 onChange = {(event) => { setAmount(event.target.value);}}
-              />
+                />
+            </Grid>
 
+            <Grid item xs={12} >
+              <Button autoFocus onClick={handleTransfer} color="primary">
+                Transact
+              </Button>
             </Grid>
           </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={handleTransfer} color="primary">
-            Transfer
-          </Button>
-          <Button autoFocus onClick={handleClose} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
-    )}
+        </TabPanel>
+
+        <TabPanel value={value} index={2}>
+          <Grid item container>
+            <Grid item xs={12}>
+              <TextField
+                id="filled-full-width"
+                label="Transfer To"
+                style={{ margin: 8 }}
+                fullWidth
+                margin="normal"
+                value={recipient}
+                onChange={(event) => { setRecipient(event.target.value) }}
+                variant="filled"
+              />
+              <QrReader
+                delay={delay}
+                style={{ height: 240, width: 320 }}
+                onError={(err) => console.log(err)}
+                onScan={(data) => handleScan(data)}
+              />
+            </Grid>
+
+            <Grid item xs={12} >
+              <TextField
+                label="Amount"
+                variant="standard"
+                value={amount}
+                InputProps={{
+                  endAdornment:
+                    <InputAdornment position="start">
+                      GRN
+                    </InputAdornment>
+                }}
+                onChange = {(event) => { setAmount(event.target.value);}}
+                />
+            </Grid>
+
+            <Grid item xs={12} >
+              <Button autoFocus onClick={handleSend} color="primary">
+                Send
+              </Button>
+            </Grid>
+          </Grid>
+        </TabPanel>
+
+        <TabPanel value={value} index={3}>
+          <Grid item container>
+            <Grid item xs={12}>
+              <TextField
+                id="filled-full-width"
+                label="Transfer To"
+                style={{ margin: 8 }}
+                fullWidth
+                margin="normal"
+                value={GRANOLA_ADDRESS}
+                disabled={true}
+                onChange={(event) => { setRecipient(event.target.value) }}
+                variant="filled"
+              />
+            </Grid>
+
+            <Grid item xs={12} >
+              <TextField
+                label="Amount"
+                variant="standard"
+                value={amount}
+                InputProps={{
+                  endAdornment:
+                    <InputAdornment position="start">
+                      GRN
+                    </InputAdornment>
+                }}
+                onChange = {(event) => { setAmount(event.target.value);}}
+                />
+            </Grid>
+
+            <Grid item xs={12} >
+              <Button autoFocus onClick={handleRedeem} color="primary">
+                Redeem
+              </Button>
+            </Grid>
+          </Grid>
+        </TabPanel>
+
+        <TabPanel value={value} index={4}>
+          <Grid item container >
+            <Grid item xs={8} >
+              <Paper className={classes.paper}>
+                <Typography noWrap>
+                  Account: <a
+                    href={`https://ropsten.etherscan.io/address/${account}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: '#ffffff'
+                    }}
+                  >
+                    {account}
+                  </a>
+                </Typography>
+
+                <p>
+                  Balance: {balance} GRN
+                </p>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={4}>
+              <img src={GranolaCoin} alt={"panthera"} />
+            </Grid>
+          </Grid>
+        </TabPanel>
+      </div>
     </div>
   );
 }
@@ -222,52 +468,3 @@ function TabPanel(props: TabPanelProps) {
     </div>
   );
 }
-
-const styles = (theme: Theme) =>
-  createStyles({
-    root: {
-      margin: 0,
-      width: 500,
-      padding: theme.spacing(2),
-    },
-    closeButton: {
-      position: 'absolute',
-      right: theme.spacing(1),
-      top: theme.spacing(1),
-      color: theme.palette.grey[500],
-    },
-});
-
-const DialogContent = withStyles((theme: Theme) => ({
-  root: {
-    width: 500,
-    padding: theme.spacing(2),
-  },
-}))(MuiDialogContent);
-
-const DialogActions = withStyles((theme: Theme) => ({
-  root: {
-    margin: 0,
-    padding: theme.spacing(1),
-  },
-}))(MuiDialogActions);
-
-export interface DialogTitleProps extends WithStyles<typeof styles> {
-  id: string;
-  children: React.ReactNode;
-  onClose: () => void;
-}
-
-const DialogTitle = withStyles(styles)((props: DialogTitleProps) => {
-  const { children, classes, onClose, ...other } = props;
-  return (
-    <MuiDialogTitle disableTypography className={classes.root} {...other}>
-      <Typography variant="h6">{children}</Typography>
-      {onClose ? (
-        <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
-          <CloseIcon />
-        </IconButton>
-      ) : null}
-    </MuiDialogTitle>
-  );
-});
