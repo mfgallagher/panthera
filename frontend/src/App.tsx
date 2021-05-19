@@ -10,7 +10,7 @@ function App() {
         <AppBar position="static">
           <Toolbar variant="dense">
             <Typography variant="h6" color="inherit" align="justify">
-              Panthera: DeCentralized Rewards System
+              Panthera: Decentralized Rewards System
             </Typography>
           </Toolbar>
         </AppBar>
