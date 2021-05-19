@@ -25,11 +25,13 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: '#3368ff'
     },
     lowPaper: {
-      margin: 'center',
-      padding: 10,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+      display: 'block',
+      padding: theme.spacing(2),
       height: 100,
       maxWidth: 600,
-      backgroundColor: '#3368ff'
+      backgroundColor: '#ccd9ff'
     },
     image: {
       width: 128,
@@ -117,6 +119,14 @@ export default function UserWallet() {
   }
 
   async function handleTransfer() {
+    if( (+balance) < (+amount) ) {
+      enqueueSnackbar("Insufficient funds for this transaction", {
+         variant:'error',
+         autoHideDuration: 3000
+       })
+       return
+    }
+    
     if(!recipient) {
       enqueueSnackbar("Please enter or scan an address to transfer to", {
          variant:'error',
@@ -216,24 +226,40 @@ export default function UserWallet() {
   }
 
   async function handleRedeem() {
-  setRecipient(GRANOLA_ADDRESS);
-  await granolaContract.methods.transfer(recipient, amount)
-  .send({from: account})
-  .then((result) => {
-      console.log(result);
-      enqueueSnackbar(`${amount} Tokens Sent!`, {
-        variant:'success',
-        autoHideDuration: 2000
-      })
-      setAccount('');
-   })
-   .catch((err) => {
-     enqueueSnackbar(err.message, {
-        variant:'error',
-        autoHideDuration: 3000
-      })
-      console.log(err)
-    });
+    if( (+balance) < (+amount) ) {
+      enqueueSnackbar("Insufficient funds for this transaction", {
+         variant:'error',
+         autoHideDuration: 3000
+       })
+       return
+    }
+
+    if(!amount) {
+      enqueueSnackbar("Please enter the amount to send", {
+         variant:'error',
+         autoHideDuration: 3000
+       })
+       return
+    }
+
+    setRecipient(GRANOLA_ADDRESS);
+    await granolaContract.methods.transfer(recipient, amount)
+    .send({from: account})
+    .then((result) => {
+        console.log(result);
+        enqueueSnackbar(`${amount} Tokens Sent!`, {
+          variant:'success',
+          autoHideDuration: 2000
+        })
+        setAccount('');
+     })
+     .catch((err) => {
+       enqueueSnackbar(err.message, {
+          variant:'error',
+          autoHideDuration: 3000
+        })
+        console.log(err)
+      });
   }
 
   if(!hasProvider) {
@@ -413,7 +439,10 @@ export default function UserWallet() {
           <Grid item container >
             <Grid item xs={8} >
               <Paper className={classes.paper}>
-                <Typography noWrap>
+                <Typography
+                  noWrap
+                  variant="h6"
+                >
                   Account: <a
                     href={`https://ropsten.etherscan.io/address/${account}`}
                     target="_blank"
@@ -426,14 +455,27 @@ export default function UserWallet() {
                   </a>
                 </Typography>
 
-                <p>
+                <Typography
+                  noWrap
+                  variant="h6"
+                >
                   Balance: {balance} GRN
-                </p>
+                </Typography>
               </Paper>
             </Grid>
 
             <Grid item xs={4}>
               <img src={GranolaCoin} alt={"panthera"} />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Paper className={classes.lowPaper}>
+                <Typography
+                  style={{ color: "#3368ff" }}
+                >
+                  This is your account page. You can access a list of your transactions by clicking on your Address, which will redirect to Etherscan. To see ERC20 Token Tx's, make sure to click the ERC20 tab.
+                </Typography>
+              </Paper>
             </Grid>
           </Grid>
         </TabPanel>
