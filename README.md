@@ -3,18 +3,23 @@
 
 ## Table of contents
 * [General info](#general-info)
-* [Technologies](#technologies)
 * [Setup](#setup)
+* [Usage](#technologies)
 
 ## General info
-This project is simple Lorem ipsum dolor generator.
-
-## Technologies
-Project is created with:
-* Lorem version: 12.3
-* Ipsum version: 2.33
-* Ament library version: 999
-
+Panthera is a decentralized rewards system designed for use in the Middlebury
+College community. Rewards Programs incentivize users to make consistent
+purchases and stay loyal to businesses. Until recently, the rewards associated
+with these programs have been limited to the business's industry, which can
+prove to be unreliable over time (especially when a global pandemic hits). By
+transitioning rewards programs to be focused around a decentralized blockchain
+network, consumers are able to accumulate points through normal retail
+purchasing while having more agency with redeeming their rewards. As of now,
+there is no existing rewards program at Middlebury to encourage on-campus
+purchases. By having a rewards system with digital currency, members of the
+Middlebury College community will be encouraged to shop on-campus more
+consistently, helping to fuel the local economy while participating in the
+excitement of the cryptocurrency world.
 
 ## Setup
 
@@ -51,3 +56,35 @@ $ cd ../project_root/frontend
 $ npm install
 $ npm start
 ```
+
+In order to access the website, you will need to be signed in to a crypto
+web-wallet; we recommend MetaMask.
+
+
+## Usage
+Panthera currently has three main uses: processing retail transactions (for
+retail workers), sending tokens to other users of the network, and redeeming
+tokens.
+
+
+#### Processing Retail Transactions
+Retail workers are able to use our interface to process transactions that are
+made and send the appropriate amount of rewards tokens to the purchaser. Our
+interface takes in a dollar amount (presumably, the user will make a purchase
+in a traditional way, and then the retail employee will be able to quickly log
+the amount spent in our application) and prompts a transaction to send the
+converted Granola amount to the purchaser. To get the blockchain address of the
+purchaser, our application will open the device's camera to scan a QR code.
+Purchasers will be expected to have a mobile MetaMask application, where they
+can display their account's QR code.
+
+#### Sending Tokens
+Users on the network are also able to send tokens to other users. This functions
+similarly to processing transactions, except users are able to directly enter
+the amount of Granola that they want to send.
+
+#### Redeeming Tokens
+When users have accumulated enough tokens, we expect that they will be able to
+redeem these tokens at retail locations for goods and/or services. To facilitate
+this, our website contains functionality to send a quantity of Granola back
+to the contract, recirculating the amount in the network. 
