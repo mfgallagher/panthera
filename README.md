@@ -23,7 +23,7 @@ excitement of the cryptocurrency world.
 
 ## Setup
 
-### Launch
+### Launch Contract
 If you are setting up this project in a new environment, or want to change
 anything about the Granola contract,  you will need to deploy the contract. For
 our purposes, we are deploying the contract to the Ropsten testnet of the
