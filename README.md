@@ -4,7 +4,7 @@
 ## Table of contents
 * [General info](#general-info)
 * [Setup](#setup)
-* [Usage](#technologies)
+* [Usage](#usage)
 
 ## General info
 Panthera is a decentralized rewards system designed for use in the Middlebury
@@ -87,4 +87,4 @@ the amount of Granola that they want to send.
 When users have accumulated enough tokens, we expect that they will be able to
 redeem these tokens at retail locations for goods and/or services. To facilitate
 this, our website contains functionality to send a quantity of Granola back
-to the contract, recirculating the amount in the network. 
+to the contract, recirculating the amount in the network.
