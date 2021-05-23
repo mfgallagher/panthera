@@ -1,4 +1,4 @@
-# panthera
+# Panthera: A Decentralized Rewards System
 
 
 ## Table of contents
