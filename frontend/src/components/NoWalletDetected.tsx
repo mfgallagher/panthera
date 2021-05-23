@@ -1,3 +1,5 @@
+// This component is called when the user is not logged into a web wallet.
+
 
 export default function NoWalletDetected() {
   return (

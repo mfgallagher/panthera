@@ -4,14 +4,13 @@ import { AbiItem } from 'web3-utils'
 import { AppBar, Box, Button, ButtonGroup, createStyles, Grid, InputAdornment, makeStyles, Paper, Tab, Tabs, TextField, Theme, Typography, } from '@material-ui/core';
 import Panthera from './../images/panthera.png';
 import GranolaCoin from './../images/GRN.png';
-import GranolaScoop from './../images/GranolaScoop.png';
 import NoWalletDetected from './NoWalletDetected';
 import { GRANOLA_ABI, GRANOLA_ADDRESS } from '../config';
 import QrReader from 'react-qr-scanner';
 import { useSnackbar } from 'notistack';
 
 
-
+//this function defines the CSS styling that we use in our component
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -56,8 +55,10 @@ export default function UserWallet() {
   const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
   const granolaContract = new web3.eth.Contract(GRANOLA_ABI as AbiItem[], GRANOLA_ADDRESS)
 
+// notistack is a package that allows notifications on the screen of the user
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
+// state variables
   const [openRedeem, setOpenRedeem] = useState(false)
   const [account, setAccount] = useState('');
   const [balance, setBalance] = useState('');
@@ -66,11 +67,12 @@ export default function UserWallet() {
   const [amount, setAmount] = useState('');
   const [hasProvider, setHasProvider] = useState(false);
   const [delay, setDelay] = useState(100);
-  const [result, setResult] = useState('No result');
-  const [qrData, setQrData] = useState('');
 
 
-
+  // This function loads the data from the Blockchain by fetching the account
+  // of the user's web wallet. If there is no account, they will not be able to
+  // enter the site. Otherwise, they are loaded into the session and their
+  // Granola balance is fetched
   async function loadBlockchainData() {
     const accounts = await web3.eth.getAccounts();
     if(accounts.length !== 0) {
@@ -81,6 +83,9 @@ export default function UserWallet() {
     }
   }
 
+  // Because the call to the blockchain takes some time, we must embed this in
+  // in a useEffect, which also helps with updating when someone switches
+  // accounts
   useEffect(() => {
     const blockchainData = async() => {
       await loadBlockchainData();
@@ -98,11 +103,22 @@ export default function UserWallet() {
     };
   }
 
+  // This function is a bit of hacky work-around to a problem we were
+  // experiencing with our state variables. The third tab of the website
+  // is where users can "redeem" tokens back to the contract, so this sets
+  // the recipient to the contract address.
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    setRecipient('');
+    if(newValue === 3) {
+      setRecipient(GRANOLA_ADDRESS);
+    } else {
+      setRecipient('');
+    }
+    setAmount('');
     setValue(newValue);
   };
 
+
+  // This function is used by the QR Scanner
   const handleScan = (data) => {
     if(!data) {
       console.log(data);
@@ -111,6 +127,10 @@ export default function UserWallet() {
     setRecipient((data.text).slice(9));
   }
 
+  // The current conversion rate for dollars spent by the customer to Granola
+  // received as rewards; the interface takes in an amount in USD, this function
+  // divides it by four and converts to an integer, then back to a string to
+  // format for the request
   const convertToGranola = (dollars) => {
     let convert = +((+amount).toFixed(2));
     let convertString = ((convert * 100) / 400).toFixed().toString();
@@ -118,6 +138,8 @@ export default function UserWallet() {
     return convertString;
   }
 
+  // This function is called when the user clicks the transaction button for
+  // transfering tokens
   async function handleTransfer() {
     if( (+balance) < (+amount) ) {
       enqueueSnackbar("Insufficient funds for this transaction", {
@@ -126,7 +148,7 @@ export default function UserWallet() {
        })
        return
     }
-    
+
     if(!recipient) {
       enqueueSnackbar("Please enter or scan an address to transfer to", {
          variant:'error',
@@ -226,6 +248,7 @@ export default function UserWallet() {
   }
 
   async function handleRedeem() {
+    setRecipient(GRANOLA_ADDRESS);
     if( (+balance) < (+amount) ) {
       enqueueSnackbar("Insufficient funds for this transaction", {
          variant:'error',
@@ -242,7 +265,6 @@ export default function UserWallet() {
        return
     }
 
-    setRecipient(GRANOLA_ADDRESS);
     await granolaContract.methods.transfer(recipient, amount)
     .send({from: account})
     .then((result) => {
@@ -262,6 +284,9 @@ export default function UserWallet() {
       });
   }
 
+  // If the user is not signed in to a web wallet (we recommend MetaMask), this
+  // will bar them from entering the site, and load a seperate component with
+  // instructions to download MetaMask
   if(!hasProvider) {
     return (
       <div>
@@ -270,7 +295,7 @@ export default function UserWallet() {
     )
   };
 
-
+  
   return (
     <div style={{
       backgroundColor: '#80a1ff'
